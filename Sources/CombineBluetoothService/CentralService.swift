@@ -37,7 +37,7 @@ class BluetoothCentralService: NSObject, CentralService {
     
     private var peripherals = [CBPeripheral]()
     
-    init(serviceIDs: [CBUUID], characteristicIDs: [CBUUID]) {
+    public init(serviceIDs: [CBUUID], characteristicIDs: [CBUUID]) {
         super.init()
         print("creating...")
         self.serviceIDs = serviceIDs
