@@ -1,14 +1,14 @@
 import CoreBluetooth
 import Combine
 
-protocol CentralService {
+public protocol CentralService {
     var events: PassthroughSubject<CentralServiceEvent, Never> { get }
     var centralState: CurrentValueSubject<CBManagerState, Never> { get }
     
     func process(intent: CentralServiceIntent)
 }
 
-enum CentralServiceEvent {
+public enum CentralServiceEvent {
     case didDiscover(peripheral: CBPeripheral)
     case didConnect(peripheral: CBPeripheral)
     case didDisconnect(peripheral: CBPeripheral)
@@ -16,26 +16,23 @@ enum CentralServiceEvent {
     case scanning(Bool)
 }
 
-enum CentralServiceIntent {
+public enum CentralServiceIntent {
     case startScanning
     case stopScanning
     case send(peripheralId: UUID, serviceUUID: CBUUID, characteristicId: CBUUID, data: Data)
 }
 
-class BluetoothCentralService: NSObject, CentralService {
+public class BluetoothCentralService: NSObject, CentralService {
     
     public let input = PassthroughSubject<CentralServiceIntent, Never>()
     public let events = PassthroughSubject<CentralServiceEvent, Never>()
     public let centralState = CurrentValueSubject<CBManagerState, Never>(.unknown)
     
     private var centralManager: CBCentralManager!
-    
-    private var bag = Set<AnyCancellable>()
-    
     private var serviceIDs: [CBUUID]!
     private var characteristicIDs: [CBUUID]!
-    
     private var peripherals = [CBPeripheral]()
+    private var bag = Set<AnyCancellable>()
     
     public init(serviceIDs: [CBUUID], characteristicIDs: [CBUUID]) {
         super.init()
