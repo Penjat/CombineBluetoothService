@@ -1,0 +1,81 @@
+# Xcode
+.DS_Store
+*.xcuserstate
+*.xccheckout
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata
+*.xcworkspace/*
+!*.xcworkspace/contents.xcworkspacedata
+!*.xcworkspace/xcshareddata
+
+# Build artifacts
+build/
+DerivedData/
+*.o
+*.LinkFileList
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# SwiftPM
+.swiftpm/
+.build/
+Package.resolved
+
+# CocoaPods
+Pods/
+Podfile.lock
+
+# Carthage
+Carthage/
+Carthage/Build/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# Archives
+*.xcarchive
+
+# Playgrounds
+timeline.xctimeline
+playground.xcworkspace
+
+# User data
+*.xcuserdatad
+*.moved-aside
+*.swp
+*.lock
+*~.nib
+
+# App data
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+xcuserdata/
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Crashlytics
+.crashlytics/
+firebase-debug.log
+
+# SPM artifacts (Xcode 13+ sometimes caches builds here)
+.xcpackage
+
+# SwiftLint / Tools
+.swiftlint.yml
+.sourcery.yml
+
+# XCTest logs
+Logs/Test/
+
+# Simulator logs & devices (optional, can be huge)
+# ~/Library/Developer/CoreSimulator/Devices/
