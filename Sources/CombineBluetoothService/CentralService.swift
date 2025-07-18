@@ -1,11 +1,16 @@
 import CoreBluetooth
 import Combine
+import GenericService
 
-public protocol CentralService {
-    var events: PassthroughSubject<CentralServiceEvent, Never> { get }
-    var centralState: CurrentValueSubject<CBManagerState, Never> { get }
+public protocol CentralService: GenericService.Service {
+    typealias Intent = CentralServiceIntent
+    typealias Event = CentralServiceEvent
+    typealias State = CBManagerState
+    typealias Configuration = Void?
     
-    func process(intent: CentralServiceIntent)
+    var input: PassthroughSubject<Intent, Never> { get }
+    var events: PassthroughSubject<Event, Never> { get }
+    var state: CurrentValueSubject<State, Never> { get }
 }
 
 public enum CentralServiceEvent {
@@ -24,9 +29,10 @@ public enum CentralServiceIntent {
 
 public class BluetoothCentralService: NSObject, CentralService {
     
-    public let input = PassthroughSubject<CentralServiceIntent, Never>()
-    public let events = PassthroughSubject<CentralServiceEvent, Never>()
-    public let centralState = CurrentValueSubject<CBManagerState, Never>(.unknown)
+    public let input = PassthroughSubject<Intent, Never>()
+    public let events = PassthroughSubject<Event, Never>()
+    public let state = CurrentValueSubject<State, Never>(.unknown)
+    public let configuration = CurrentValueSubject<Configuration, Never>(nil)
     
     private var centralManager: CBCentralManager!
     private var serviceIDs: [CBUUID]!
@@ -102,11 +108,11 @@ public class BluetoothCentralService: NSObject, CentralService {
 }
 
 extension BluetoothCentralService: CBCentralManagerDelegate {
-    func centralManagerDidUpdateState(_ central: CBCentralManager) {
-        centralState.send(centralManager.state)
+    public func centralManagerDidUpdateState(_ central: CBCentralManager) {
+        state.send(centralManager.state)
     }
     
-    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral,
+    public func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral,
                         advertisementData: [String: Any], rssi RSSI: NSNumber) {
         if !peripherals.contains(peripheral) {
             centralManager.connect(peripheral, options: nil)
@@ -119,7 +125,7 @@ extension BluetoothCentralService: CBCentralManagerDelegate {
         }
     }
     
-    func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+    public func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         peripheral.delegate = self
         peripheral.discoverServices(serviceIDs)
         events.send(.didConnect(peripheral: peripheral))
@@ -127,14 +133,14 @@ extension BluetoothCentralService: CBCentralManagerDelegate {
 }
 
 extension BluetoothCentralService: CBPeripheralDelegate {
-    func peripheral(_ peripheral: CBPeripheral, didModifyServices invalidatedServices: [CBService]) {
+    public func peripheral(_ peripheral: CBPeripheral, didModifyServices invalidatedServices: [CBService]) {
         for service in invalidatedServices where serviceIDs.contains(service.uuid) {
             peripheral.discoverServices(serviceIDs)
         }
         
     }
 
-    func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
+    public func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         if let error = error {
             print("\(error)")
             return
@@ -147,11 +153,11 @@ extension BluetoothCentralService: CBPeripheralDelegate {
         }
     }
     
-    func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: (any Error)?) {
+    public func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: (any Error)?) {
         events.send(.didDisconnect(peripheral: peripheral))
     }
     
-    func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
+    public func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         if let error = error {
             print("\(error)")
             return
@@ -167,7 +173,7 @@ extension BluetoothCentralService: CBPeripheralDelegate {
         }
     }
 
-    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
+    public func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         if let error = error {
             print("Error receiving data: \(error.localizedDescription)")
             return
@@ -183,7 +189,7 @@ extension BluetoothCentralService: CBPeripheralDelegate {
         events.send(.recievedData(peripheralId: peripheral.identifier, characteristicId: characteristic.uuid, data: characteristicData))
     }
 
-    func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
+    public func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
         
         if let error {
             print("\(error)")
@@ -201,7 +207,7 @@ extension BluetoothCentralService: CBPeripheralDelegate {
         
     }
     
-    func peripheralIsReady(toSendWriteWithoutResponse peripheral: CBPeripheral) {
+    public func peripheralIsReady(toSendWriteWithoutResponse peripheral: CBPeripheral) {
         
     }
 }
